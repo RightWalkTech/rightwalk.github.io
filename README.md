@@ -1,2 +1,2 @@
-# rightwalk.github.io
+# rightwalktech.github.io
 Architectural vision documentation for Citizen-AI
