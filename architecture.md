@@ -50,14 +50,15 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
   - Metadata, inbox routing, escalation.
   - Acts as the *primary conversational state holder*.
 
-### 2.2 Backend (FastAPI, private EC2)
+### 2.2 Backend (*chatwhat*, golang, private EC2)
   - Receives Chatwoot webhooks.
   - Decides whether AI or human owns the turn.
   - Performs context assembly.
   - Mediates *all* side effects.
 
-### 2.3 AI Decision Engine (PydenticAI, Agent Loop)
+### 2.3 AI Decision Engine (Agentor)
   - Currently single-agent, single-model.
+  - self developed tool written in golang for stability, performance, and concurrency  
   - Responsible for intent understanding, planning, and response generation.
   - No direct database or external system access.
 
@@ -109,10 +110,9 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
   State is distributed across:
   - **Chatwoot conversations** – conversational and ownership state.
   - **NAPS portal** – authoritative workflow state.
-  - **Backend Postgres** – durable user mappings, audit data, opportunity data.
-```html
-  Forward path: `Temporal` is the intended source of truth for durable workflow state.
-```
+  - **Postgres DB** – durable user mappings, audit data, opportunity data.
+  - **Chatwhat** – Go backend that integrates Chatwoot + LLM + MCP + Postgres
+
 ---
 
 ## 3. Evaluation, Observability & Safety
@@ -120,10 +120,11 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
 Evaluation is treated as **both observability and infrastructure**.
 
 ### 3.1 Observability
-- **Infra & app metrics:** CloudWatch, SigNoz.
-- **LLM telemetry:** Langfuse (latency, tokens, tool usage).
+- **Infra & app metrics:** Logs and Metrices in SigNoz.
+- **LLM telemetry:** Traces in Signoz.
 
 ### 3.2 Evaluation as infrastructure
+- Self-developed evaluation system (Assertyr) for agent correctness, safety, and compliance.
 - Replay of real conversations.
 - Tool correctness checks.
 - Consent and safety assertions.
@@ -135,7 +136,7 @@ Evaluation outputs influence:
 - Tool schema evolution.
 - Release gating.
 
-### 3.3 Assertyr – Evaluation & Safety Infrastructure
+### 3.3 Assertyr (written in golang) – Evaluation & Safety Infrastructure
 
   **Assertyr** is RightWalk’s **agent evaluation and safety infrastructure**, designed specifically for non-deterministic, agentic conversational systems operating in public-sector workflows.
 
@@ -148,7 +149,7 @@ Evaluation outputs influence:
   * Chatwoot conversations,
   * Backend action logs,
   * MCP tool invocation records,
-  * Langfuse LLM traces.
+  * Signoz LLM traces.
 
   It does **not** participate in runtime decision-making, but instead governs **what is allowed to ship and scale**.
 
@@ -239,7 +240,6 @@ This document intentionally excludes employer architecture. A similar approach c
 - No assumption that long-horizon features are imminent.
 
 ### 4.3. Open Decisions
-- Temporal rollout sequencing.
 - Cache reintroduction strategy.
 - Recommendation engine boundaries.
 - Token budget enforcement.
