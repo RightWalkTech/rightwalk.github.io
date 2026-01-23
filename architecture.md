@@ -50,15 +50,15 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
   - Metadata, inbox routing, escalation.
   - Acts as the *primary conversational state holder*.
 
-### 2.2 Backend (*chatwhat*, golang, private EC2)
+### 2.2 Backend (*chatwhat*, golang, containerised, private EC2)
   - Receives Chatwoot webhooks.
   - Decides whether AI or human owns the turn.
   - Performs context assembly.
   - Mediates *all* side effects.
 
-### 2.3 AI Decision Engine (Agentor)
+### 2.3 AI Decision Engine (Agentor, part of backend)
   - Currently single-agent, single-model.
-  - self developed tool written in golang for stability, performance, and concurrency  
+  - Self-developed tool for agentic-loops, written in golang for stability, performance, and concurrency  
   - Responsible for intent understanding, planning, and response generation.
   - No direct database or external system access.
 
@@ -86,14 +86,14 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
   - Connectivity to NAPS APIs and internal datasets.
   - Full audit logging.
 
-  LLMs decide *what* to do; MCP defines *how* it happens.
+  Agentor decide *what* to do; MCP defines *how* it happens.
 
 ### 2.5. Opportunity Intelligence Plane (Part of MCP server, with PGvector)
 
   While NAPS remains the system of record, **Opportunity Intelligence** is a first-class internal plane:
 
   Components:
-  - Normalized Opportunity Database (Postgres).
+  - Normalized Opportunity Database (Postgres, planned).
   - Semantic indexing for filters like `Sector/Industry`, `Course Name`, `Location` etc. (pgvector).
   - Deterministic ranking and filtering logic.
   - MCP tools:
@@ -111,7 +111,6 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
   - **Chatwoot conversations** – conversational and ownership state.
   - **NAPS portal** – authoritative workflow state.
   - **Postgres DB** – durable user mappings, audit data, opportunity data.
-  - **Chatwhat** – Go backend that integrates Chatwoot + LLM + MCP + Postgres
 
 ---
 
@@ -120,11 +119,12 @@ A WhatsApp-first conversational system that enables **opportunity discovery, ass
 Evaluation is treated as **both observability and infrastructure**.
 
 ### 3.1 Observability
-- **Infra & app metrics:** Logs and Metrices in SigNoz.
-- **LLM telemetry:** Traces in Signoz.
+- Everything is based on OpenTelemetry (OTel)
+- **Infra & app telemetry:** Logs and Metrices in SigNoz.
+- **AI Agent telemetry:** Traces in Signoz.
 
 ### 3.2 Evaluation as infrastructure
-- Self-developed evaluation system (Assertyr) for agent correctness, safety, and compliance.
+- Self-developed evaluation system (**Assertyr**) for agent correctness, safety, and compliance.
 - Replay of real conversations.
 - Tool correctness checks.
 - Consent and safety assertions.
@@ -200,7 +200,7 @@ Evaluation outputs influence:
 
   #### Positioning
 
-  Assertyr is treated as a **first-class platform component**, alongside MCP and the backend, ensuring that agent behavior remains:
+  Assertyr is treated as a **first-class platform component**, alongside the MCP and the Agentor, ensuring that agent behavior remains:
 
   * auditable,
   * reproducible,
@@ -209,10 +209,12 @@ Evaluation outputs influence:
 ### 3.4. Infrastructure (AWS)
 
 - Single VPC, private-by-default.
-- Public ingress via Nginx / ALB.
+- Public ingress via Nginx.
 - Private subnets for Chatwoot, Backend, MCP.
 - NAT-based egress.
 - Single-AZ today; Multi-AZ/region and ASG planned.
+- Single AWS Aurora with PG16-DB-cluster read-replica in different AG.
+- Seperate an isolated DB for each application like chatwoot, backend, MCP etc.
 
 Stateless services enable horizontal scaling.
 
@@ -230,7 +232,7 @@ The **Employer WhatsApp Bot** will be:
 - A separate backend.
 - A separate MCP server.
 
-While patterns and stack will be similar, it is **not** a shared runtime with the citizen system.
+While patterns and stack will be similar, it is **not** a shared runtime with the present system.
 
 This document intentionally excludes employer architecture. A similar approach can be taken for creating a WA conversation layer for other portals like RTE.
 
