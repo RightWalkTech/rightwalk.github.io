@@ -214,11 +214,11 @@ Evaluation outputs influence:
 - NAT-based egress.
 - Single-AZ today; Multi-AZ/region and ASG planned.
 - Single AWS Aurora with PG16-DB-cluster read-replica in different AG.
-- Seperate an isolated DB for each application like chatwoot, backend, MCP etc.
+- Seperate and isolated DB for each application like chatwoot, backend, MCP etc.
 
 Stateless services enable horizontal scaling.
 
-![AWS Architectural diagram for RightWalk NAPS Whatsapp BOT](./architectural_diagram.jpg)
+![AWS Architectural diagram for RightWalk NAPS Whatsapp BOT](./architectural_diagram.webp)
 
 
 ---
